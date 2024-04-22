@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { View } from "react-native";
 import {
   Text,
@@ -10,6 +10,7 @@ import {
 } from "react-native-paper";
 import { router } from "expo-router";
 import { useDispatch } from "react-redux";
+import { register } from "../state/authSlice";
 import User from "../interfaces/User";
 
 const SignUp = () => {
@@ -39,7 +40,7 @@ const SignUp = () => {
   };
 
   const goToLogin = () => {
-    router.push("/Login");
+    router.replace("/Login");
   };
 
   const registerUser = async () => {
@@ -57,6 +58,7 @@ const SignUp = () => {
             showSnackBar: true,
             snackBarMessage: "You have Successfully Registered",
           });
+          dispatch(register(json))
           setTimeout(() => {
             router.replace("/Home");
           }, 2000);
@@ -72,7 +74,7 @@ const SignUp = () => {
       });
   };
   return (
-    <SafeAreaView style={style.mainContainer}>
+    <View style={style.mainContainer}>
       <Snackbar
         style={{ minWidth: "100%", justifyContent: "center" }}
         wrapperStyle={{
@@ -151,7 +153,7 @@ const SignUp = () => {
         Sign Up
       </Button>
       <Button onPress={goToLogin}>Already Have an Account?</Button>
-    </SafeAreaView>
+    </View>
   );
 };
 

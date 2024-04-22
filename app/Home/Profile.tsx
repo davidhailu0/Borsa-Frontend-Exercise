@@ -9,17 +9,19 @@ import {
 } from "react-native-paper";
 import { View, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import User from "../interfaces/User";
+import User from "../../interfaces/User";
+import { useSelector } from "react-redux";
 
 const Profile = () => {
+  const user = useSelector((state:any)=>state.auth)
   const [userInfo, setUserInfo] = useState<User>({
-    firstName: "",
-    lastName: "",
-    email: "",
-    userName: "",
-    address: "",
-    isBuyer: false,
-    profilePic: "",
+    firstName: user["firstName"],
+    lastName: user["lastName"],
+    email: user["email"],
+    userName: user["userName"],
+    address: user["address"],
+    isBuyer: user["isBuyer"],
+    profilePic: user["profilePic"],
   });
   const [snackBar, setSnackBar] = useState({
     showSnackBar: false,
@@ -33,8 +35,8 @@ const Profile = () => {
   };
 
   const updateUser = async () => {
-    fetch(process.env.EXPO_PUBLIC_API_URL + "/register/v2", {
-      method: "POST",
+    fetch(process.env.EXPO_PUBLIC_API_URL + `/profile?id=${user["_id"]}`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -42,7 +44,7 @@ const Profile = () => {
     })
       .then(async (resp) => {
         const json = await resp.json();
-        if ("token" in json) {
+        if ("_id" in json) {
           setSnackBar({
             showSnackBar: true,
             snackBarMessage: "You have Successfully Updated Your Profile",
@@ -55,28 +57,26 @@ const Profile = () => {
         }
       })
       .catch((e) => {
-        console.log(e);
+        setSnackBar({
+          showSnackBar: true,
+          snackBarMessage: e.message,
+        });
       });
   };
   return (
-    <SafeAreaView>
-      {/* <Avatar.Image source={require("")} /> */}
+    <View style={style.mainContainer}>
       <Snackbar
         style={{ minWidth: "100%", justifyContent: "center" }}
         wrapperStyle={{
           top: 0,
-          width: "100%",
-          minWidth: "100%",
-          justifyContent: "center",
+          zIndex:999
         }}
         visible={snackBar.showSnackBar}
         onDismiss={dismissSnackBar}
       >
         {snackBar.snackBarMessage}
       </Snackbar>
-      <Text variant="headlineMedium" style={style.title}>
-        Sign Up
-      </Text>
+      <Avatar.Image style={{margin:"auto",alignSelf:"center"}} source={{uri:"https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250"}} />
       <View style={style.nameContainer}>
         <TextInput
           mode="outlined"
@@ -111,6 +111,7 @@ const Profile = () => {
         mode="outlined"
         label={"Address"}
         placeholder="City, Country"
+        value={userInfo["address"]}
         onChangeText={(value: string) => handleChange("address", value)}
       />
       <View style={style.checkBoxContainer}>
@@ -126,7 +127,7 @@ const Profile = () => {
       <Button mode="contained" onPress={updateUser}>
         Update User Profile
       </Button>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -134,7 +135,6 @@ const style = StyleSheet.create({
   mainContainer: {
     padding: 30,
     flex: 1,
-    justifyContent: "center",
     backgroundColor: "#161622",
   },
   title: {

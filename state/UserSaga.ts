@@ -1,19 +1,21 @@
-import { call, put, takeLatest } from "redux-saga/effects";
+import { call, put, takeEvery } from "redux-saga/effects";
+import { fetchUsersSuccess } from "./UserSlice";
+import User from "../interfaces/User";
 
-const GET_USERS = "GET_USERS";
-const GET_USERS_FETCH = "GET_USERS_FETCH";
-function fetchUser(page: number) {
+export const GET_USERS = "GET_USERS"
+
+function fetchUser(page:number) {
+  console.log(page)
   return fetch(
     process.env.EXPO_PUBLIC_API_URL + `/fetch/dummy/user-v2?page=${page}`
-  ).then((resp) => resp.json().then((js) => js["data"]));
+  ).then((resp:Response) => resp.json().then((js:{count:number,data:User[]}) => js["data"])).catch(()=>[]);
 }
 
-function* fetchUsersWorker(): Generator {
-  let page = 1;
-  const users = yield call(fetchUser, page);
-  yield put({ type: GET_USERS, users });
+function* fetchUsersWorker(action:{type:string,payload:number}): Generator {
+  const users = yield call(fetchUser,action.payload);
+  yield put(fetchUsersSuccess(users as User[]));
 }
 
 export default function* fetchUserSaga() {
-  yield takeLatest(GET_USERS_FETCH, fetchUsersWorker);
+  yield takeEvery(GET_USERS, fetchUsersWorker);
 }

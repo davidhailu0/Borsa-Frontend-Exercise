@@ -1,23 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-type AuthState = {
-  token: string;
-  user: Object;
-};
-
-const initialState: AuthState = {
-  token: "",
-  user: "",
-};
 const authSlice = createSlice({
   name: "authSlice",
-  initialState,
+  initialState:{},
   reducers: {
-    login: (state: AuthState, action: PayloadAction<AuthState>) => {
+    login: (state: Object, action: PayloadAction<Object>) => {
       return { ...state, ...action.payload };
     },
-    register: (state: AuthState, action: PayloadAction<AuthState>) => {
+    register: (state: Object, action: PayloadAction<Object>) => {
       return { ...state, ...action.payload };
     },
   },

@@ -7,7 +7,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     fetchUsersSuccess: (state: User[], action: PayloadAction<User[]>) => {
-      state = [...state, ...action.payload];
+      state = [...state,...action.payload];
       return state;
     },
   },

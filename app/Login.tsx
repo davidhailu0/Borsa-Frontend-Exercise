@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { SafeAreaView, StyleSheet } from "react-native";
-import { Text, TextInput, Button } from "react-native-paper";
+import { View, StyleSheet } from "react-native";
+import { Text, TextInput, Button, Snackbar } from "react-native-paper";
+import {router} from "expo-router";
+import { useDispatch } from "react-redux";
+import { login } from "../state/authSlice";
 
 const Login = () => {
   const [userInfo, setUserInfo] = useState({
@@ -8,21 +11,64 @@ const Login = () => {
     password: "",
   });
 
+  const [snackBar, setSnackBar] = useState({
+    showSnackBar: false,
+    snackBarMessage: "",
+  });
+
+  const dismissSnackBar = () => {
+    setSnackBar((prev) => ({ ...prev, showSnackBar: false }));
+  };
+
   const handleChange = (name: string, value: string) => {
     setUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
+  const dispatch = useDispatch()
+
   const loginUser = async () => {
-    const resp = await fetch(process.env.EXPO_PUBLIC_API_URL + "/login", {
+    fetch(process.env.EXPO_PUBLIC_API_URL + "/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({}),
-    });
+      body: JSON.stringify(userInfo),
+    }).then(async(resp:Response)=>{
+      const json = await resp.json()
+      if("token" in json){
+        setSnackBar({showSnackBar:true,snackBarMessage:"Welcome"})
+        dispatch(login(json))
+        setTimeout(() => {
+          router.replace("/Home");
+        }, 2000);
+      }
+      else if ("message" in json) {
+        setSnackBar({
+          showSnackBar: true,
+          snackBarMessage: json["message"],
+        });
+      }
+    }).catch((e)=>{
+      setSnackBar({showSnackBar:true,snackBarMessage:e.message})
+    })
   };
+
+  const goToSignUp = () => {
+    router.replace("/");
+  };
+
   return (
-    <SafeAreaView style={style.mainContainer}>
+    <View style={style.mainContainer}>
+      <Snackbar
+        style={{ minWidth: "100%", justifyContent: "center" }}
+        wrapperStyle={{
+          top: 0,
+        }}
+        visible={snackBar.showSnackBar}
+        onDismiss={dismissSnackBar}
+      >
+        {snackBar.snackBarMessage}
+      </Snackbar>
       <Text variant="headlineMedium" style={style.title}>
         Log In
       </Text>
@@ -43,7 +89,8 @@ const Login = () => {
       <Button mode="contained" onPress={loginUser} style={{ marginTop: 20 }}>
         Log In
       </Button>
-    </SafeAreaView>
+      <Button onPress={goToSignUp}>Don't have an Account? Sign Up</Button>
+    </View>
   );
 };
 
