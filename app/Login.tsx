@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, StyleSheet } from "react-native";
 import { Text, TextInput, Button, Snackbar } from "react-native-paper";
-import {router} from "expo-router";
+import { router } from "expo-router";
 import { useDispatch } from "react-redux";
 import { login } from "../state/authSlice";
 
@@ -24,33 +24,55 @@ const Login = () => {
     setUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const loginUser = async () => {
+    if (userInfo["email"] === "" && userInfo["password"] === "") {
+      setSnackBar({
+        showSnackBar: true,
+        snackBarMessage: "Please Enter Your Email and Password",
+      });
+      return;
+    }
+    if (userInfo["email"] === "") {
+      setSnackBar({
+        showSnackBar: true,
+        snackBarMessage: "Please Enter Your Email",
+      });
+      return;
+    }
+    if (userInfo["password"] === "") {
+      setSnackBar({
+        showSnackBar: true,
+        snackBarMessage: "Please Enter Your Password",
+      });
+      return;
+    }
     fetch(process.env.EXPO_PUBLIC_API_URL + "/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(userInfo),
-    }).then(async(resp:Response)=>{
-      const json = await resp.json()
-      if("token" in json){
-        setSnackBar({showSnackBar:true,snackBarMessage:"Welcome"})
-        dispatch(login(json))
-        setTimeout(() => {
-          router.replace("/Home");
-        }, 2000);
-      }
-      else if ("message" in json) {
-        setSnackBar({
-          showSnackBar: true,
-          snackBarMessage: json["message"],
-        });
-      }
-    }).catch((e)=>{
-      setSnackBar({showSnackBar:true,snackBarMessage:e.message})
     })
+      .then(async (resp: Response) => {
+        const json = await resp.json();
+        if ("token" in json) {
+          setSnackBar({ showSnackBar: true, snackBarMessage: "Welcome" });
+          dispatch(login(json));
+          setTimeout(() => {
+            router.replace("/Home");
+          }, 2000);
+        } else if ("message" in json) {
+          setSnackBar({
+            showSnackBar: true,
+            snackBarMessage: json["message"],
+          });
+        }
+      })
+      .catch((e) => {
+        setSnackBar({ showSnackBar: true, snackBarMessage: e.message });
+      });
   };
 
   const goToSignUp = () => {
