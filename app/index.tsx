@@ -16,6 +16,7 @@ import { register } from "../state/authSlice";
 import User from "../interfaces/User";
 
 const SignUp = () => {
+  //Used for Handling the State of the User
   const [userInfo, setUserInfo] = useState<User>({
     firstName: "",
     lastName: "",
@@ -27,6 +28,8 @@ const SignUp = () => {
     isBuyer: false,
     profilePic: "https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250",
   });
+
+  //Used For Handling User Error Inputs
   const [userInfoError, setUserInfoError] = useState({
     firstNameError: false,
     lastNameError: false,
@@ -45,6 +48,7 @@ const SignUp = () => {
   }, []);
   const dispatch = useDispatch();
 
+  //Fetch the Latitude and Logitude of the User
   const getLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
@@ -56,6 +60,7 @@ const SignUp = () => {
     getCityAndCountry(location.coords.latitude, location.coords.longitude);
   };
 
+  //Convert the Latitude and Longitude to Actual City and Country 
   const getCityAndCountry = async (latitude: number, longitude: number) => {
     try {
       const address = await fetch(
@@ -74,16 +79,20 @@ const SignUp = () => {
     setSnackBar((prev) => ({ ...prev, showSnackBar: false }));
   };
 
+  //handles User Input Change
   const handleChange = (name: string, value: string) => {
     setUserInfo((prev) => ({ ...prev, [name]: value }));
     setUserInfoError((prev) => ({ ...prev, [name + "Error"]: false }));
   };
 
+  //handles Routing
   const goToLogin = () => {
     router.replace("/Login");
   };
 
+  //Register Function for new user
   const registerUser = async () => {
+    // Check for Errors in User Input
     let errorMessage = ""
     if (userInfo.firstName == ""||!validator.isAlpha(userInfo['firstName'])) {
       errorMessage = "First Name is Empty or Contains Invalid Characters"
@@ -146,12 +155,15 @@ const SignUp = () => {
         } else if ("message" in json) {
           setSnackBar({
             showSnackBar: true,
-            snackBarMessage: json["message"] + " Please Login",
+            snackBarMessage: json["message"],
           });
         }
       })
       .catch((e) => {
-        console.log(e);
+        setSnackBar({
+          showSnackBar: true,
+          snackBarMessage: e.message,
+        });
       });
   };
   return (

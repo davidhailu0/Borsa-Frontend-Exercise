@@ -9,6 +9,7 @@ const Home = () => {
   const users: User[] = useSelector((state: any) => state.users);
   const dispatch = useDispatch();
   const [page, setPage] = useState<number>(2);
+  //To Avoid Unnecessary rerendering
   const MemoizedCard = memo(
     ({ item }: { item: User }) => (
       <Card.Title
@@ -33,6 +34,7 @@ const Home = () => {
     dispatch({ type: GET_USERS, payload: 1 });
   }, []);
 
+  //fetches the Next List of Users
   const fetchNextPage = () => {
     dispatch({ type: GET_USERS, payload: page });
     setPage((prev) => prev + 1);

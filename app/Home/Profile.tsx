@@ -23,6 +23,7 @@ const Profile = () => {
     isBuyer: user["isBuyer"],
     profilePic: user["profilePic"],
   });
+  //handles For Error Input 
   const [userInfoError, setUserInfoError] = useState({
     firstNameError: false,
     lastNameError: false,
@@ -30,6 +31,7 @@ const Profile = () => {
     userNameError: false,
     addressError: false,
   });
+  //sets the Snackbar messages and status
   const [snackBar, setSnackBar] = useState({
     showSnackBar: false,
     snackBarMessage: "",
@@ -37,11 +39,26 @@ const Profile = () => {
   const dismissSnackBar = () => {
     setSnackBar((prev) => ({ ...prev, showSnackBar: false }));
   };
+  //for handling user input change
   const handleChange = (name: string, value: string) => {
     setUserInfo((prev) => ({ ...prev, [name]: value }));
     setUserInfoError((prev) => ({ ...prev, [name + "Error"]: false }));
   };
 
+  // Set the Change to initial data if error happened
+  const setToInitialData = ()=>{
+    setUserInfo({
+      firstName: user["firstName"],
+      lastName: user["lastName"],
+      email: user["email"],
+      userName: user["userName"],
+      address: user["address"],
+      isBuyer: user["isBuyer"],
+      profilePic: user["profilePic"],
+    })
+  }
+
+  //validates and requests for updating the User data
   const updateUser = async () => {
     let errorMessage = ""
     if (userInfo.firstName == ""||!validator.isAlpha(userInfo['firstName'])) {
@@ -83,13 +100,15 @@ const Profile = () => {
             snackBarMessage: "You have Successfully Updated Your Profile",
           });
         } else if ("message" in json) {
+          setToInitialData()
           setSnackBar({
             showSnackBar: true,
-            snackBarMessage: json["message"] + " Please Login",
+            snackBarMessage: json["message"],
           });
         }
       })
       .catch((e) => {
+        setToInitialData()
         setSnackBar({
           showSnackBar: true,
           snackBarMessage: e.message,

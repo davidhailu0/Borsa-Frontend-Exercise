@@ -6,6 +6,8 @@ import { useDispatch } from "react-redux";
 import validator from "validator";
 import { login } from "../state/authSlice";
 
+
+//Login Page Function Component
 const Login = () => {
   const [userInfo, setUserInfo] = useState({
     email: "",
@@ -21,13 +23,15 @@ const Login = () => {
     setSnackBar((prev) => ({ ...prev, showSnackBar: false }));
   };
 
+  //handles User Input Change
   const handleChange = (name: string, value: string) => {
     setUserInfo((prev) => ({ ...prev, [name]: value }));
   };
 
   const dispatch = useDispatch();
-
+  // User Login Function
   const loginUser = async () => {
+    //Checking if Every Value is Correct
     if ((userInfo["email"] === ""||!validator.isEmail(userInfo["email"])) && userInfo["password"] === "") {
       setSnackBar({
         showSnackBar: true,

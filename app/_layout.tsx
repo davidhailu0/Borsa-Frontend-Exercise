@@ -1,3 +1,4 @@
+//Root Component for all the Pages
 import { Provider } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Slot } from "expo-router";
