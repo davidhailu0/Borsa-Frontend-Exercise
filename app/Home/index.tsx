@@ -54,7 +54,6 @@ const Home = () => {
 const style = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#161622",
   },
   cardStyle: {
     backgroundColor: "#fff",

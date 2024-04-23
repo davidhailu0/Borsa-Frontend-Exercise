@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Image } from "react-native";
 import { View } from "react-native";
 import {
   Text,
@@ -11,6 +11,7 @@ import {
 import { router } from "expo-router";
 import { useDispatch } from "react-redux";
 import * as Location from "expo-location";
+import validator from 'validator';
 import { register } from "../state/authSlice";
 import User from "../interfaces/User";
 
@@ -24,7 +25,7 @@ const SignUp = () => {
     confirmPassword: "",
     address: "",
     isBuyer: false,
-    profilePic: "",
+    profilePic: "https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250",
   });
   const [userInfoError, setUserInfoError] = useState({
     firstNameError: false,
@@ -34,8 +35,6 @@ const SignUp = () => {
     passwordError: false,
     confirmPasswordError: false,
     addressError: false,
-    isBuyer: false,
-    profilePic: "",
   });
   const [snackBar, setSnackBar] = useState({
     showSnackBar: false,
@@ -85,25 +84,33 @@ const SignUp = () => {
   };
 
   const registerUser = async () => {
-    if (userInfo.firstName == "") {
+    let errorMessage = ""
+    if (userInfo.firstName == ""||!validator.isAlpha(userInfo['firstName'])) {
+      errorMessage = "First Name is Empty or Contains Invalid Characters"
       setUserInfoError((prev) => ({ ...prev, firstNameError: true }));
     }
-    if (userInfo.lastName == "") {
+    if (userInfo.lastName == ""||!validator.isAlpha(userInfo['lastName'])) {
+      errorMessage = errorMessage==""?"Last Name is Empty or Contains Invalid Characters":errorMessage
       setUserInfoError((prev) => ({ ...prev, lastNameError: true }));
     }
-    if (userInfo.email == "") {
+    if (userInfo.email == ""||!validator.isEmail(userInfo['email'])) {
+      errorMessage = errorMessage==""?"Email is Empty or It is Invalid Email":errorMessage
       setUserInfoError((prev) => ({ ...prev, emailError: true }));
     }
     if (userInfo.userName == "") {
+      errorMessage = errorMessage==""?"Username is Empty":errorMessage
       setUserInfoError((prev) => ({ ...prev, userNameError: true }));
     }
-    if (userInfo.password === "") {
+    if (userInfo.password === ""||!validator.isStrongPassword(userInfo['password']!)) {
+      errorMessage = errorMessage==""?"Password is not Strong":errorMessage
       setUserInfoError((prev) => ({ ...prev, passwordError: true }));
     }
-    if (userInfo.confirmPassword === "") {
+    if (userInfo.confirmPassword === ""||!validator.isStrongPassword(userInfo['confirmPassword']!)) {
+      errorMessage = errorMessage==""?"Confirm Password is not Strong":errorMessage
       setUserInfoError((prev) => ({ ...prev, confirmPasswordError: true }));
     }
-    if (userInfo.password === userInfo.confirmPassword) {
+    if (userInfo.password != userInfo.confirmPassword) {
+      errorMessage = errorMessage==""?"Password and Confirm Password don't match":errorMessage
       setUserInfoError((prev) => ({
         ...prev,
         passwordError: true,
@@ -111,15 +118,12 @@ const SignUp = () => {
       }));
     }
     if (userInfo.address === "") {
+      errorMessage = errorMessage==""?"Address is Empty":errorMessage
       setUserInfoError((prev) => ({ ...prev, addressError: true }));
     }
-    const flag = Object.values(userInfoError).filter((vl) => vl);
-    if (flag) {
-      setSnackBar({
-        showSnackBar: true,
-        snackBarMessage: "Please Enter All The Required Fields",
-      });
-      return;
+    if(errorMessage!=""){
+      setSnackBar({showSnackBar:true,snackBarMessage:errorMessage})
+      return
     }
     fetch(process.env.EXPO_PUBLIC_API_URL + "/register/v2", {
       method: "POST",
@@ -156,15 +160,14 @@ const SignUp = () => {
         style={{ minWidth: "100%", justifyContent: "center" }}
         wrapperStyle={{
           top: 0,
-          width: "100%",
-          minWidth: "100%",
-          justifyContent: "center",
+          zIndex:999
         }}
         visible={snackBar.showSnackBar}
         onDismiss={dismissSnackBar}
       >
         {snackBar.snackBarMessage}
       </Snackbar>
+      <Image style={{height:90,width:50,alignSelf:"center"}}source={require("../assets/logo.png")}/>
       <Text variant="headlineMedium" style={style.title}>
         Sign Up
       </Text>
@@ -173,7 +176,8 @@ const SignUp = () => {
           mode="outlined"
           label={"First Name"}
           value={userInfo["firstName"]}
-          style={{ width: "50%" }}
+          style={{ width: "50%",marginVertical:7,
+          marginHorizontal:2 }}
           error={userInfoError["firstNameError"]}
           onChangeText={(value: string) => handleChange("firstName", value)}
         />
@@ -181,7 +185,8 @@ const SignUp = () => {
           mode="outlined"
           label={"Last Name"}
           value={userInfo["lastName"]}
-          style={{ width: "50%" }}
+          style={{ width: "50%",marginVertical:7,
+          marginHorizontal:2 }}
           error={userInfoError["lastNameError"]}
           onChangeText={(value: string) => handleChange("lastName", value)}
         />
@@ -200,12 +205,14 @@ const SignUp = () => {
         label={"Username"}
         value={userInfo["userName"]}
         error={userInfoError["userNameError"]}
+        style={style.textFieldStyle}
         onChangeText={(value: string) => handleChange("userName", value)}
       />
       <TextInput
         mode="outlined"
         label={"Password"}
         onChangeText={(value: string) => handleChange("password", value)}
+        style={style.textFieldStyle}
         error={userInfoError["passwordError"]}
         secureTextEntry={true}
       />
@@ -213,6 +220,7 @@ const SignUp = () => {
         mode="outlined"
         label={"Confirm Password"}
         onChangeText={(value: string) => handleChange("confirmPassword", value)}
+        style={style.textFieldStyle}
         error={userInfoError["confirmPasswordError"]}
         secureTextEntry={true}
       />
@@ -221,14 +229,21 @@ const SignUp = () => {
         label={"Address"}
         placeholder="City, Country"
         value={userInfo["address"]}
+        style={style.textFieldStyle}
         error={userInfoError["addressError"]}
         onChangeText={(value: string) => handleChange("address", value)}
       />
+      <TextInput
+        mode="outlined"
+        label={"Profile Pic"}
+        value={userInfo['profilePic']}
+        style={style.textFieldStyle}
+        onChangeText={(value: string) => handleChange("address", value)}
+      />
       <View style={style.checkBoxContainer}>
-        <Text style={{ color: "#fff" }}>Is Buyer</Text>
+        <Text>Is Buyer</Text>
         <Checkbox
           status={userInfo.isBuyer ? "checked" : "unchecked"}
-          uncheckedColor="#fff"
           onPress={() =>
             setUserInfo((prev) => ({ ...prev, isBuyer: !prev.isBuyer }))
           }
@@ -243,15 +258,17 @@ const SignUp = () => {
 };
 
 const style = StyleSheet.create({
+  textFieldStyle:{
+    marginVertical:3,
+    marginHorizontal:2
+  },
   mainContainer: {
     padding: 30,
     flex: 1,
     justifyContent: "center",
-    backgroundColor: "#161622",
   },
   title: {
     textAlign: "center",
-    color: "#fff",
   },
   nameContainer: {
     flexDirection: "row",

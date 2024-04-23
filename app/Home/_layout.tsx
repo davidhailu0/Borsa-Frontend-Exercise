@@ -6,17 +6,19 @@ export default function Layout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Drawer>
         <Drawer.Screen
-          name="index" // This is the name of the page and must match the url from root
+          name="index"
           options={{
             drawerLabel: 'Home',
             title: 'Home',
+            drawerActiveTintColor:"#663399"
           }}
         />
         <Drawer.Screen
-          name="Profile" // This is the name of the page and must match the url from root
+          name="Profile"
           options={{
             drawerLabel: 'User',
             title: 'Profile',
+            drawerActiveTintColor:"#663399"
           }}
         />
       </Drawer>

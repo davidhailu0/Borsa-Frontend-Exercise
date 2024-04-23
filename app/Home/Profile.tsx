@@ -8,7 +8,7 @@ import {
   Checkbox,
 } from "react-native-paper";
 import { View, StyleSheet } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import validator from "validator";
 import User from "../../interfaces/User";
 import { useSelector } from "react-redux";
 
@@ -23,6 +23,13 @@ const Profile = () => {
     isBuyer: user["isBuyer"],
     profilePic: user["profilePic"],
   });
+  const [userInfoError, setUserInfoError] = useState({
+    firstNameError: false,
+    lastNameError: false,
+    emailError: false,
+    userNameError: false,
+    addressError: false,
+  });
   const [snackBar, setSnackBar] = useState({
     showSnackBar: false,
     snackBarMessage: "",
@@ -32,9 +39,35 @@ const Profile = () => {
   };
   const handleChange = (name: string, value: string) => {
     setUserInfo((prev) => ({ ...prev, [name]: value }));
+    setUserInfoError((prev) => ({ ...prev, [name + "Error"]: false }));
   };
 
   const updateUser = async () => {
+    let errorMessage = ""
+    if (userInfo.firstName == ""||!validator.isAlpha(userInfo['firstName'])) {
+      errorMessage = "First Name is Empty or Contains Invalid Characters"
+      setUserInfoError((prev) => ({ ...prev, firstNameError: true }));
+    }
+    if (userInfo.lastName == ""||!validator.isAlpha(userInfo['lastName'])) {
+      errorMessage = errorMessage==""?"Last Name is Empty or Contains Invalid Characters":errorMessage
+      setUserInfoError((prev) => ({ ...prev, lastNameError: true }));
+    }
+    if (userInfo.email == ""||!validator.isEmail(userInfo['email'])) {
+      errorMessage = errorMessage==""?"Email is Empty or It is Invalid Email":errorMessage
+      setUserInfoError((prev) => ({ ...prev, emailError: true }));
+    }
+    if (userInfo.userName == "") {
+      errorMessage = errorMessage==""?"Username is Empty":errorMessage
+      setUserInfoError((prev) => ({ ...prev, userNameError: true }));
+    }
+    if (userInfo.address === "") {
+      errorMessage = errorMessage==""?"Address is Empty":errorMessage
+      setUserInfoError((prev) => ({ ...prev, addressError: true }));
+    }
+    if(errorMessage!=""){
+      setSnackBar({showSnackBar:true,snackBarMessage:errorMessage})
+      return
+    }
     fetch(process.env.EXPO_PUBLIC_API_URL + `/profile?id=${user["_id"]}`, {
       method: "PUT",
       headers: {
@@ -76,20 +109,24 @@ const Profile = () => {
       >
         {snackBar.snackBarMessage}
       </Snackbar>
-      <Avatar.Image style={{margin:"auto",alignSelf:"center"}} source={{uri:"https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250"}} />
+      <Avatar.Image style={{margin:"auto",alignSelf:"center",marginBottom:15}} source={{uri:"https://www.gravatar.com/avatar/2c7d99fe281ecd3bcd65ab915bac6dd5?s=250"}} />
       <View style={style.nameContainer}>
         <TextInput
           mode="outlined"
           label={"First Name"}
           value={userInfo["firstName"]}
-          style={{ width: "50%" }}
+          style={{ width: "50%",marginVertical:3,
+          marginHorizontal:2 }}
+          error={userInfoError['firstNameError']}
           onChangeText={(value: string) => handleChange("firstName", value)}
         />
         <TextInput
           mode="outlined"
           label={"Last Name"}
           value={userInfo["lastName"]}
-          style={{ width: "50%" }}
+          style={{ width: "50%",marginVertical:3,
+          marginHorizontal:2 }}
+          error={userInfoError['lastNameError']}
           onChangeText={(value: string) => handleChange("lastName", value)}
         />
       </View>
@@ -99,26 +136,31 @@ const Profile = () => {
         value={userInfo["email"]}
         textContentType="emailAddress"
         keyboardType="email-address"
+        style={style.textFieldStyle}
+        error={userInfoError['emailError']}
         onChangeText={(value: string) => handleChange("email", value)}
       />
       <TextInput
         mode="outlined"
         label={"Username"}
         value={userInfo["userName"]}
+        style={style.textFieldStyle}
+        error={userInfoError['userNameError']}
         onChangeText={(value: string) => handleChange("userName", value)}
       />
       <TextInput
         mode="outlined"
         label={"Address"}
         placeholder="City, Country"
+        style={style.textFieldStyle}
         value={userInfo["address"]}
+        error={userInfoError['addressError']}
         onChangeText={(value: string) => handleChange("address", value)}
       />
       <View style={style.checkBoxContainer}>
-        <Text style={{ color: "#fff" }}>Is Buyer</Text>
+        <Text>Is Buyer</Text>
         <Checkbox
           status={userInfo.isBuyer ? "checked" : "unchecked"}
-          uncheckedColor="#fff"
           onPress={() =>
             setUserInfo((prev) => ({ ...prev, isBuyer: !prev.isBuyer }))
           }
@@ -135,11 +177,6 @@ const style = StyleSheet.create({
   mainContainer: {
     padding: 30,
     flex: 1,
-    backgroundColor: "#161622",
-  },
-  title: {
-    textAlign: "center",
-    color: "#fff",
   },
   nameContainer: {
     flexDirection: "row",
@@ -155,6 +192,11 @@ const style = StyleSheet.create({
     right: 0,
     left: 0,
     width: "100%",
+  },
+  textFieldStyle:{
+    marginVertical:3,
+    marginHorizontal:2,
+    width:"102%"
   },
 });
 
